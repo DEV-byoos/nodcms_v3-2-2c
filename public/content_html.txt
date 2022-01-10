@@ -1,0 +1,41 @@
+<!-- DEBUG-VIEW START 2 ROOTPATH/nodcms-articles/Views/frontend/article.php -->
+<div class="container">
+    </div>
+<div class="margin-top-10 margin-bottom-10">
+    <div class="container">
+        <div class="row">
+            <div class="col">
+                            </div>
+            <div class="col">
+                            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    <div class="row">
+                            <!-- ARTICLE -->article
+                                       <div class="col-md">
+                <h3 class="font-grey-mint">Other Articles</h3>
+                <ul class="list-unstyled">
+                                            <li>
+                            <a href="http://localhost/1__codeigniter_dev/1__2021/cms/portage_nodcms_ci415_v3215/public/en/article/linux" title="migration_linux_debian">migration_linux_debian</a>
+                        </li>zzzz
+                                            <li>
+                            <a href="http://localhost/1__codeigniter_dev/1__2021/cms/portage_nodcms_ci415_v3215/public/en/article/test" title="test">test</a>
+                        </li>zzzz
+                                            <li>
+                            <a href="http://localhost/1__codeigniter_dev/1__2021/cms/portage_nodcms_ci415_v3215/public/en/article/othersite" title="Catalogue">Catalogue</a>
+                        </li>zzzz
+                                            <li>
+                            <a href="http://localhost/1__codeigniter_dev/1__2021/cms/portage_nodcms_ci415_v3215/public/en/article/developpments" title="developments">developments</a>
+                        </li>zzzz
+                                            <li>
+                            <a href="http://localhost/1__codeigniter_dev/1__2021/cms/portage_nodcms_ci415_v3215/public/en/article/academy" title="academy">academy</a>
+                        </li>zzzz
+                                    </ul>
+            </div>
+            </div>
+</div>
+
+<!-- DEBUG-VIEW ENDED 2 ROOTPATH/nodcms-articles/Views/frontend/article.php -->
