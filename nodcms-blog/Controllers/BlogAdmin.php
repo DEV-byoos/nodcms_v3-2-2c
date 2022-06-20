@@ -77,7 +77,7 @@ class BlogAdmin extends Backend
         $config['total_rows'] = Models::blogPost()->getCount($conditions);
 
         $myList->setOptions($config);
-
+//var_dump( Services::request()->isAJAX() );die;//BYOOS_tag
         if (Services::request()->isAJAX()) {
             $result = Models::blogPost()->getAll($conditions, $config['per_page'], $config['page'], $sort_by);
             return  $myList->ajaxData($result);

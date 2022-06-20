@@ -1,0 +1,8 @@
+CRITICAL - 2022-06-17 11:50:39 --> Trying to access array offset on value of type null
+in APPPATH/Models/Users.php on line 161.
+ 1 APPPATH/Models/Users.php(161): CodeIgniter\Debug\Exceptions->errorHandler()
+ 2 ROOTPATH/nodcms-users/Controllers/Users.php(346): NodCMS\Core\Models\Users->loginMatch()
+ 3 SYSTEMPATH/CodeIgniter.php(898): NodCMS\Users\Controllers\Users->login()
+ 4 SYSTEMPATH/CodeIgniter.php(468): CodeIgniter\CodeIgniter->runController()
+ 5 SYSTEMPATH/CodeIgniter.php(351): CodeIgniter\CodeIgniter->handleRequest()
+ 6 FCPATH/index.php(86): CodeIgniter\CodeIgniter->run()

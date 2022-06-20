@@ -23,7 +23,7 @@ class Paths
 	 * Include the path if the folder is not in the same directory
 	 * as this file.
 	 */
-	public $systemDirectory = SYSTEMPATH;
+	public $systemDirectory = ROOTPATH."vendor/codeigniter4/framework/system".DIRECTORY_SEPARATOR;
 
 	/*
 	 *---------------------------------------------------------------

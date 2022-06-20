@@ -43,7 +43,7 @@ class Database extends \CodeIgniter\Database\Config
 		'hostname' => 'localhost',
 		'username' => 'byoosadmin',
 		'password' => 'sqlMamayo!237',
-		'database' => 'v2022_nodcms_portage_c1415_3215_prod',
+		'database' => 'v2022_nodcms_v3_2_2c _dev',
 		'DBDriver' => 'MySQLi',
 		'DBPrefix' => '',
 		'pConnect' => false,
