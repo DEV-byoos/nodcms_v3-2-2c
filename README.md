@@ -1,10 +1,12 @@
-# [NodCMS](http://nodcms.com) 
+# [NodCMS](http://nodcms.com) and [Byoosdigital] (http://byoosdigital.com)
 NodCMS is a <strong>free</strong>, Multilingual, simple and powerful CMS based on [CodeIgniter4]((https://codeigniter.com/)).
 
-More information can be found at [nodcms.com](http://nodcms.com/).
+More information can be found at [nodcms.com](http://nodcms.com/)) and [Byoosdigital] (http://byoosdigital.com).
 
 This repository holds a source, composer dependencies, and latest released versions of the NodCMS.
-
+## update
+MISE à JOUR
+Portage  de nodcms_3-2-2c to CodeIgniter 4.2.0    2022/06/15  to 2022/06/21
 ## Demo
 [demo.nodcms.com](http://demo.nodcms.com/)
 
@@ -18,7 +20,7 @@ Username: `demo`, Password: `demo`
 > `public/` is your website root directory. [Learn More](https://codeigniter.com/user_guide/concepts/structure.html#public)
 
 The following points are the most important changes on NodCMS since v3.x
-1. Codeigniter 4
+1. Codeigniter 4.2
 2. New NodCMS core & structure
 3. Better modular structure
 4. Some quick debugs
@@ -27,6 +29,7 @@ The following points are the most important changes on NodCMS since v3.x
 You can download the latest released version as a ZIP file from [nodcms-bundle](https://github.com/khodakhah/nodcms-bundle). 
 
 [Download ZIP File](https://github.com/khodakhah/nodcms-bundle/archive/master.zip)
+[Download ZIP File](https://github.com/DEV-byoos/nodcms_v3-2-2c.git)
 
 ## Composer Installation
 ### Create a NodCMS Project
@@ -63,3 +66,4 @@ So you can only need to follow the below steps right now.
 ## Bugs Reports
 If you find an issue, let me know [here](https://github.com/khodakhah/nodcms/issues/new)!
 # nodcms_v3-2-2c
+If you find an issue, let me know [here](https://github.com/DEV-b yoos/nodcms_v3-2-2c/issues/new)!
