@@ -1,0 +1,7 @@
+*/config/development
+*/logs/log-*.php
+*/logs/!index.html
+*/cache/*
+*/cache/!index.html
+*/cache/!.htaccess
+nodcms_v3-2-2c_dev/config/database.php

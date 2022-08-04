@@ -1,0 +1,427 @@
+Bonjour devs,
+
+Fichier nodcms-portage-ci420_v3-2-2c.txt  
+OBJECTIFS
+Portage  de nodcms_3-2-1-5   vers CodeIgniter 4.1.5 puis amélioration de PAGINATION, AUTH, AFFICHAGE des articles  2021/11/30  to 2021/12/24
+MISE à JOUR
+Portage  de nodcms_3-2-2c   vers CodeIgniter 4.2.0    2022/06/15  to 2022/06/21
+
+SONT REQUIS
+nodcms   version 3-2-1-5 du 2021/11/30   codeIgniter 4.1.5   gbobard@gmail.com
+
+environment
+debian 11.2  -  PHP8.1  -  MariaDB 10.5
+
+Fichier .htaccess à installer dans /root/ puis remplacez  /myPath par votre répertoire de travail
+	# redirect to public page
+	  <IfModule mod_rewrite.c>
+		RewriteEngine On
+		RewriteCond %{REQUEST_URI} !^public$
+		RewriteCond %{REQUEST_URI} !^/.well-known/acme-challenge [NC]
+		RewriteRule "^(.*)$" "/myPath/public/" [R=301,L]
+	  </IfModule>
+
+	# disable directory browsing
+	# For security reasons, Option all cannot be overridden.
+	Options +SymLinksIfOwnerMatch -Indexes
+
+	# prevent folder listing
+	IndexIgnore *
+
+End of .htaccess code
+1)
+******************************
+Compatibilité  CI 4.1.4	
+ajouter dans nodcms-core/config/Execptions.php
+    /**
+     * --------------------------------------------------------------------------
+     * HIDE FROM DEBUG TRACE
+     * --------------------------------------------------------------------------
+     * Any data that you would like to hide from the debug trace.
+     * In order to specify 2 levels, use "/" to separate.
+     * ex. ['server', 'setup/password', 'secret_token']
+     *
+     * @var array
+     */
+    public $sensitiveDataInTrace = [];	
+
+2)    
+*******************************
+/root/public/.htaccess
+
+ligne 33 à modifier avec index.php?/$1
+	RewriteRule ^([\s\S]*)$ index.php?/$1 [L,NC,QSA]
+	
+Activer le mode  rewrite apache2,  réécriture d'URL
+
+$sudo  a2enmod rewrite
+
+IN /etc/apache2/apache2.conf  //AllowOverride None change AllowOverride All
+<Directory /var/www/>
+        Options Indexes FollowSymLinks
+        AllowOverride All
+        Require all granted
+</Directory>  
+
+puis redémarrer le serveur apache2
+$sudo  systemcl restart apache2
+
+********************************
+
+portage de CI4.0.4 vers CI 4.1.5
+
+Editer le fichier /root/public/index.php 
+puis corriger le SYSTEMPATH   // CodeIgniter core path
+define("SYSTEMPATH", ROOTPATH."vendor/codeigniter4/framework/system".DIRECTORY_SEPARATOR;
+
+mettre  à jour dans le fichier  /root/nodcms-core/config/paths.php
+	public $systemDirectory = SYSTEMPATH;
+
+3) CONFIGURATION
+********************************
+si vous souhaiter plutôt travailler en mode http uniquement alors désactiver  le mode https forcé dans
+root/nodcms-core/config/App.php
+	|--------------------------------------------------------------------------
+	| URI PROTOCOL
+	|--------------------------------------------------------------------------
+	|
+	| If true, this will force every request made to this application to be
+	| made via a secure connection (HTTPS). If the incoming request is not
+	| secure, the user will be redirected to a secure version of the page
+	| and the HTTP Strict Transport Security header will be set.
+	*/
+	public $forceGlobalSecureRequests = false;
+
+*******************************
+
+INSTALLATION des dépendances
+se positionner dans la racine du projet ICI  /myPath/portage-nodcms-ci415_v3-2-1-5,
+
+puis lancer l'app  composer sachant que celle doit être installée sur le serveur
+sudo composer install
+
+les dépendances vont s'installer automatiquement mais il existe maintenant deux STSTEM   /root/system   et  root/vendor/codeigniter4/framework/system 
+supprimez le répertoire root/system
+répondez yes à la question suivante
+Continue as root/super user [yes]? y
+
+4)	
+********************************
+activez le mode développement afin de suivre les alarme et autres messages
+IN /root/public/index.php
+// Acceptable values: development, testing, production
+define('ENVIRONMENT', 'development');
+
+*********************************
+activer le mode logs
+IN root/nodcms-core/Config/logger.php
+	public $threshold = 	public $threshold = [3, 4, 5, 8,9];
+	
+FIN CONFIGURATION
+**********************************
+AUTHENTIFICATION utilisateur
+5) modifier    root/nodcms-users/Controllers/Users.php  champ password 255 car.
+le modèle de données table users  change la taille à 255 caractères, idem dans le model Users fonction init()
+
+    function init()
+    {
+        $table_name = "users";
+        $primary_key = "user_id";
+        $fields = array(
+            'user_id'=>"int(10) unsigned NOT NULL AUTO_INCREMENT",
+            'username'=>"varchar(50) DEFAULT NULL",
+            'password'=>"varchar(255) DEFAULT NULL",
+			...
+			'auth'=>"varchar(4) DEFAULT NULL",
+*************************************
+remplacer l'authentification  MD5  par  les fonctions PHP passord_hash()  puis password_verify()
+6) modifier    root/nodcms-core/Models/Users.php
+
+    public function loginMatch($username, $password) : ?array
+    {
+        // old code...return $this->getOne(null, ['username'=>$username, 'password'=>md5($password)]);
+        $auth = $this->getOne(null, ['username'=>$username, 'auth'=>'MD5', 'password'=>md5($password)]);
+        if($auth){
+			$data['password'] = password_hash($password, PASSWORD_BCRYPT);
+			$data['auth'] = 'HASH';
+			$id = $auth['user_id'];
+			parent::edit($id, $data);
+			return $auth;
+		}	
+		$data = $this->getOne(null, ['username'=>$username]);
+		$pass = $data['password'];
+		$authenticatePassword = password_verify($password, $pass);
+		if($authenticatePassword){
+			return $data;
+		}
+        return array();
+    }
+    
+*************************************
+       
+IN  /root/nodcms-users/Controllers/Users.php  remplacer le MD5 par  password_hash($data['password'], PASSWORD_BCRYPT)
+ligne 117 puis ligne 293
+*************************************
+
+puis IN    /root/nodcms-users/Controllers/GeneralMembers.php  modifier la ligne suivante 
+           if(md5($post_data['password']) != $this->userdata["password"]){
+				...
+				
+            if(!password_verify($post_data['password'], $this->userdata['password'])){
+                return $this->errorMessage("Your current password is wrong.", $self_url);
+            }
+
+**************************************
+IN  /root/nodcms-core/Models/Users.php  remplacer le MD5 par  password_hash($data['password'], PASSWORD_BCRYPT)
+
+    public function edit($id, $data)
+    {
+        if(key_exists('password', $data)) {
+            $data['password'] = password_hash($data['password']);
+        }
+        ....
+FIN AUTHENTIFICATION
+****************************************
+6) modifier    root/nodcms-core/Models/Model.php  forcer le retour type (int)  pour return count($result)!=0?(int) $result["sum($field)"]:0;
+
+    function getSum($field, $conditions = null): int
+    {
+        $builder = $this->getBuilder();
+        $builder->select("sum($field)");
+        if ($conditions != null)
+            $this->searchDecode($conditions, $builder);
+        $query = $builder->get();
+        $result = $query->getRowArray();
+        return count($result)!=0?(int) $result["sum($field)"]:0;
+    }
+
+**************************************
+PAGINATION
+IN  /root/nodcms-layout/Views/common/pagination/
+copier le fichier pagination_bootstrap.php comme celui vue sur le site 
+https://includebeer.com/fr/blog/creation-dune-application-web-de-base-avec-codeigniter-4-partie-4
+
+IN root/nodcms-core/Config/pager.php 
+ajouter la ligne 
+        // Template personnalisé pour utiliser Bootstrap
+        'bootstrap'      => '\NodCMS\Layout\Views\common\pagination\pagination_bootstrap',
+        
+IN IN root/nodcms-core/Controllers/GeneralAdmin.php 
+
+        $config = array();
+        $config['base_url'] = ADMIN_URL.'user';
+        $tab = array_filter(explode('/', $config['base_url']));
+        unset($tab[0], $tab[2]);
+        $config['tab_uri_segment'] = implode('/', $tab);
+        $config['reuse_query_string'] = TRUE;
+        $config['total_rows'] = Services::model()->users()->getCount();
+        $config['uri_segment'] = count($tab)+1;
+        $config['per_page'] = 10;
+****************************************
+IN root/nodcms-core/Controllers/App.php 
+   protected function mkPagination(array $config)
+    {
+        $pagination = \Config\Services::pager();
+        $pagination->setPath($config['tab_uri_segment']);
+        $pagination->setSegment($config['uri_segment']);
+        if((int) ceil($config['total_rows'] / $config['per_page']) > 1){
+            $this->data['pagination'] = $pagination->makeLinks($pagination->getCurrentPage(), $config['per_page'], $config['total_rows'], 'bootstrap', $config['uri_segment']);
+		}           
+        else{
+            $this->data['pagination'] = "";
+		}
+    }
+FIN PAGINATION
+*******************************************
+TRADUCTION
+
+IN root/nodcms-core/Language/en/App.php 
+
+Ajouter le répertoire  'fr'   root/nodcms-core/Language/fr/App.php 
+traduire les phrases de l'Anglais vers la langue Fançaise
+
+FIN TRADUCTION
+********************************************
+LANGAGE gestion des 'code'
+Réparation du code de langue par défaut  'en  'fr' ...
+IN /root/nodcms-core/Filters/UrlLocale.php
+
+    public function before(RequestInterface $request, $arguments = null)
+    {
+		$config=config('app');
+
+        $localePrefix = $request->uri->getSegment(1);
+        // No prefix has been set
+        if(empty($localePrefix)) {
+				$locale=$config->defaultLocale;
+			if(empty($local)) {
+				// getDefaultRecord force 'en' or browser language // other code...'locale_accept_from_http($_SERVER['HTTP_ACCEPT_LANGUAGE'])'
+				$language = Models::languages()->getDefaultRecord();				
+			}else{
+				$language = Models::languages()->getByCode($locale);
+			}
+        }
+        // Set system language from URL language code (Language prefix)
+        else{
+            $language = Models::languages()->getByCode($localePrefix);
+        }
+        ...
+        
+exploter la config IN root/nodcms-core/Config/App.php 	public $defaultLocale = 'fr';
+********************************************
+ensuite dans la librairie Language  IN root/nodcms-core/libtaries/language.php  méthode  set afin de stocker  la langue courante en session
+    public function set(array $language)
+    {
+		$session = \Config\Services::session();
+		$newdata['language'] = $language;
+        $session->set($newdata);
+        $this->DBlanguage = $language;
+        parent::setLocale($language['code']);
+    }
+*********************************************
+puis dans la vue... IN root/nodcms-core/Layout/Views/nodcms-top-menu.php
+
+<img alt="" src="<?php echo $this->language['image']; ?>" />
+remplacer par <img alt="" src="<?php echo base_url("/".$this->language['image']); ?>" />
+
+*********************************************
+IN   /root/nodcms-core/Controllers/General.php
+        $this->data['languages'] = Models::languages()->getAllActives();
+déplacer la ligne ci-dessus  IN  /root/nodcms-core/Controllers/Frontend.php
+        parent::__construct();
+			....
+
+gestion des langues sur le frontend
+		// added this code from nodcms 2.1 -- Set Languages menu 
+        $this->data['lang_url'] = base_url().'/'.uri_string();
+        $this->data['languages'] = Models::languages()->getAllActives();
+        foreach ($this->data['languages'] as &$value) {
+            $url_array = explode("/",$this->data["lang_url"]);
+            $url_array[array_search($this->lang,$url_array)]=$value["code"];
+            $value["lang_url"] = implode("/",$url_array);
+        }
+FIN LANGAGE
+*********************************************
+Tenter d'afficher le lien View Site côté Admin
+
+        // Add top menu
+        Services::topMenu()->addLink(
+            'view_site',
+            _l("View Site", $this),
+            CONFIG_BASE_URL."{$this->language['code']}"
+        );
+
+*********************************************
+IN /root/nodcms-articles/Views/frontend/article.php
+    <?php echo $this->render($content_type); ?>
+     ... ajouter echo ...
+BUGG  corrigé, OUF!!!...
+*********************************************
+IN root/nodcms-core/Models/Model.php 
+
+    function getTranslations(int $id, int $language_id = 0): array
+    {
+        if($language_id === 0)// correctif BYOOS
+            $language_id = Services::language()->get()['language_id'];
+				...
+***********************************************
+LES SERVICES
+IN root/nodcms-services/Controllers/ServicesAdmin.php 
+
+        if($this->settings['services_page']){
+            $config[] = array(
+                'field' => 'service_uri',
+                'label' => _l("Service URI", $this),
+                'rules' => 'required|validURI|is_unique[services.service_uri'.(isset($current_data)?",service_id,$current_data[service_id]":"").']',
+                'type' => "text",
+                'default'=>isset($current_data)?$current_data["service_uri"]:'',
+                'input_prefix'=>base_url($this->language['code']."/service-"),// correctif, remplacer /  par -
+            );
+        }
+FIN SERVICES
+*************************************************
+PORTFOLIO
+IN root/nodcms-portfolio/Config/Routes.php
+Ajouter une route
+$routes->get('{locale}/portfolio', "\NodCMS\Portfolio\Controllers\Portfolio::Home"); 
+
+définir un menu  sur la route 'portfolio'
+Apparement ce module n'est pas complet ... à suivre ...
+
+**************************************************
+installation avec php8.1  correctif CI_415
+IN /root/vendor/codeigniter4/..../system/Validation/FormatRules.php
+
+    public function valid_ip(?string $ip = null, ?string $which = ''): bool // correctif  $which = ''
+    {
+        if (empty($ip)) {
+            return false;
+        }
+
+        switch (strtolower($which)) {
+            case 'ipv4':
+                $which = FILTER_FLAG_IPV4;
+                break;
+
+            case 'ipv6':
+                $which = FILTER_FLAG_IPV6;
+                break;
+
+            default:
+                $which = FILTER_DEFAULT;// correctif FILTER_DEFAULT
+                break;
+        }
+
+IN /root/vendor/codeigniter4/..../system/HTTP/ResponseTrait.php
+    public function send()
+    {
+        // If we're enforcing a Content Security Policy,
+        // we need to give it a chance to build out it's headers.
+        if ($this->CSPEnabled === true) {
+            $this->CSP->finalize($this);
+        } else {
+            $this->body = str_replace(['{csp-style-nonce}', '{csp-script-nonce}'], '', $this->body ?? '');//correctif
+        }
+
+        $this->sendHeaders();
+        $this->sendCookies();
+        $this->sendBody();
+
+        return $this;
+
+
+IN  /root/nodcms-core/View/View.php     string $viewPath = ''
+    public function __construct($config = null, string $viewPath = '', $loader = null, bool $debug = null, LoggerInterface $logger = null)
+    {
+    
+IN  /root/vendor/codeigniter4/framework/system/View/View.php     string $viewPath = ''
+    public function __construct($config = null, string $viewPath = '', $loader = null, bool $debug = null, LoggerInterface $logger = null)
+    { 
+ 
+IN  /var/www/html/cms/vendor/codeigniter4/framework/system/I18n/Time.php     string $time = ''   
+    public function __construct(?string $time = '', $timezone = null, ?string $locale = null)
+    {   
+    
+****************************************************
+IN/root/nodcms-core/Models/Model.php
+
+remplacer $builder->group_start();    par  $builder->groupStart();
+remplacer $builder->group_end();	  par  $builder->groupEnd();
+
+le nom de ces méthodes ont changées entre CI3.1.11 et CI4.1.5
+
+****************************************************
+NOTA:  le répertoire root/nodcms-core/wiew  a été renommé par rapport à l'install appstarter de CI4...( bon à savoir )...
+
+portage de CI4.1.5 vers CI 4.2 le 16/06/2022
+télécharger la version 4.2 de codeigniter4
+lancer la procédure composer install à la racine de CI4.2
+dans le projet nodCMS  3.2.2c  copier les fichiers de CI4.2  composer.jsn et composer.lock
+lancer la procédure  composer update à la racine du projet nodCMS 3.2.2c
+puis copier de ci4.2  le répertoire /system   ver le projet nodCMS 3.2.2c  vendor/codeigniter4/framework/system
+
+c'est terminé, ne pas oublier la mise à jour duficher /root/public/index.php
+ 
+
+Thanks for the work done by the NodCMS 3.2.1.5 team led by Khodakhah
+THAT's WORK !!! / C'est du travail ! !!
