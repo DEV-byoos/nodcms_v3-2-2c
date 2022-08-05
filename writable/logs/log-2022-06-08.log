@@ -1,4 +1,0 @@
-CRITICAL - 2022-06-08 11:32:49 --> Access to undeclared static property Kint\Kint::$depth_limit
-in SYSTEMPATH/CodeIgniter.php on line 264.
- 1 SYSTEMPATH/CodeIgniter.php(198): CodeIgniter\CodeIgniter->initializeKint()
- 2 FCPATH/index.php(64): CodeIgniter\CodeIgniter->initialize()

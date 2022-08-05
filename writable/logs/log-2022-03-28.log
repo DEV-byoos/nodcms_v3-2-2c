@@ -1,5 +1,0 @@
-CRITICAL - 2022-03-28 18:57:05 --> Access to undeclared static property Kint\Kint::$depth_limit
-#0 /var/www/html/1__codeigniter_dev/1__2022/cms/nodcms_v3-2-2c/vendor/codeigniter4/framework/system/CodeIgniter.php(186): CodeIgniter\CodeIgniter->initializeKint()
-#1 /var/www/html/1__codeigniter_dev/1__2022/cms/nodcms_v3-2-2c/vendor/codeigniter4/framework/system/bootstrap.php(146): CodeIgniter\CodeIgniter->initialize()
-#2 /var/www/html/1__codeigniter_dev/1__2022/cms/nodcms_v3-2-2c/public/index.php(71): require('...')
-#3 {main}
