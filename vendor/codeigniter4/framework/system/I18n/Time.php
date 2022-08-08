@@ -82,7 +82,7 @@ class Time extends DateTime
         // If a test instance has been provided, use it instead.
         if ($time === '' && static::$testNow instanceof self) {
             $timezone = $timezone ?: static::$testNow->getTimezone();
-            $time     = (string) static::$testNow->toDateTimeString();
+            $time     = static::$testNow->format('Y-m-d H:i:s');
         }
 
         $timezone       = $timezone ?: date_default_timezone_get();
@@ -452,7 +452,7 @@ class Time extends DateTime
     }
 
     /**
-     * Returns the age in years from the "current" date and 'now'
+     * Returns the age in years from the date and 'now'
      *
      * @throws Exception
      *
@@ -460,11 +460,8 @@ class Time extends DateTime
      */
     public function getAge()
     {
-        $now  = self::now()->getTimestamp();
-        $time = $this->getTimestamp();
-
         // future dates have no age
-        return max(0, date('Y', $now) - date('Y', $time));
+        return max(0, $this->difference(self::now())->getYears());
     }
 
     /**
@@ -1005,7 +1002,7 @@ class Time extends DateTime
      */
     public function humanize()
     {
-        $now  = IntlCalendar::fromDateTime(self::now($this->timezone)->toDateTimeString());
+        $now  = IntlCalendar::fromDateTime(self::now($this->timezone));
         $time = $this->getCalendar()->getTime();
 
         $years   = $now->fieldDifference($time, IntlCalendar::FIELD_YEAR);
@@ -1106,7 +1103,7 @@ class Time extends DateTime
      */
     public function getCalendar()
     {
-        return IntlCalendar::fromDateTime($this->toDateTimeString());
+        return IntlCalendar::fromDateTime($this);
     }
 
     /**

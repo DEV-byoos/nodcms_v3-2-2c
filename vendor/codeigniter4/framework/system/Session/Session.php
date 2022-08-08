@@ -187,7 +187,7 @@ class Session implements SessionInterface
         /** @var CookieConfig $cookie */
         $cookie = config('Cookie');
 
-        $this->cookie = new Cookie($this->sessionCookieName, '', [
+        $this->cookie = (new Cookie($this->sessionCookieName, '', [
             'expires'  => $this->sessionExpiration === 0 ? 0 : time() + $this->sessionExpiration,
             'path'     => $cookie->path ?? $config->cookiePath,
             'domain'   => $cookie->domain ?? $config->cookieDomain,
@@ -195,7 +195,7 @@ class Session implements SessionInterface
             'httponly' => true, // for security
             'samesite' => $cookie->samesite ?? $config->cookieSameSite ?? Cookie::SAMESITE_LAX,
             'raw'      => $cookie->raw ?? false,
-        ]);
+        ]))->withPrefix(''); // Cookie prefix should be ignored.
 
         helper('array');
     }
@@ -411,6 +411,28 @@ class Session implements SessionInterface
     {
         $_SESSION['__ci_last_regenerate'] = time();
         session_regenerate_id($destroy);
+
+        $this->removeOldSessionCookie();
+    }
+
+    private function removeOldSessionCookie(): void
+    {
+        $response              = Services::response();
+        $cookieStoreInResponse = $response->getCookieStore();
+
+        if (! $cookieStoreInResponse->has($this->sessionCookieName)) {
+            return;
+        }
+
+        // CookieStore is immutable.
+        $newCookieStore = $cookieStoreInResponse->remove($this->sessionCookieName);
+
+        // But clear() method clears cookies in the object (not immutable).
+        $cookieStoreInResponse->clear();
+
+        foreach ($newCookieStore as $cookie) {
+            $response->setCookie($cookie);
+        }
     }
 
     /**
