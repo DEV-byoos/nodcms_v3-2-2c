@@ -41,9 +41,9 @@ class Database extends \CodeIgniter\Database\Config
 	public $default = [
 		'DSN'      => '',
 		'hostname' => 'localhost',
-		'username' => 'byoosadmin',
-		'password' => 'sqlMamayo!237',
-		'database' => 'v2022_nodcms_v3-2-2c-main_github',
+		'username' => '',
+		'password' => '',
+		'database' => '',
 		'DBDriver' => 'MySQLi',
 		'DBPrefix' => '',
 		'pConnect' => false,
